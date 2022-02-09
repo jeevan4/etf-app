@@ -26,5 +26,5 @@ func main() {
 	}
 
 	// fmt.Printf("Args %s\n", args[1:])
-	fmt.Println("Elapsed:", time.Since(start))
+	fmt.Println("Command Elapsed:", time.Since(start))
 }

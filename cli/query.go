@@ -1,10 +1,14 @@
 package cli
 
 import (
+	"etf-app/models"
 	"flag"
 	"fmt"
+	"net/http"
 	"strings"
 )
+
+const url string = "https://70a77bonik.execute-api.us-east-1.amazonaws.com/live/similar?ticker="
 
 type etfList []string
 
@@ -41,5 +45,29 @@ func (q *QueryCmd) Run(args []string) error {
 		return err
 	}
 	fmt.Printf("Holdings: %v, Similar: %v, Etfs %s \n", q.Holdings, q.Similar, q.etf)
+	etfUrl := fmt.Sprintf("%s%s", url, q.etf[0])
+	fmt.Println(etfUrl)
+	resp, err := http.Get(etfUrl)
+	if err != nil {
+		return err
+	}
+	allData := models.AllData{}
+	// d, _ := io.ReadAll(resp.Body)
+	// fmt.Println(string(d))
+	err = allData.FromJson(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// fmt.Printf("%+v", allData.Topten[0])
+	allData.ToJson()
+	// hold := models.NewHolding("AAPL", "Apple Inc,", 3.45)
+	// hold.ToJson()
+	// data := []byte(`{"ticker": "msft", "weightxx":"1.34"}`)
+	// hold1 := models.Holding{}
+	// err = hold1.FromJson(data)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// fmt.Printf("%+v\n", hold1)
 	return nil
 }
