@@ -15,6 +15,9 @@ func (e *EtfCommands) Query(args []string) error {
 	fmt.Println("Command from Query")
 	queryCmd := NewQueryCmd()
 	queryCmd.Run(args)
+	// print the fetched results
+	queryCmd.ToJson(queryCmd.allData)
+	queryCmd.ToJson(queryCmd.etfDetails)
 	return nil
 }
 func NewEtfCommand(name string) *EtfCommands {
