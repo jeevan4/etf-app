@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"etf-app/models"
+	"etf-app/schemas"
 	"flag"
 	"fmt"
 	"io"
@@ -39,6 +40,7 @@ func (e *etfList) FromJson(b io.Reader) error {
 type QueryCmd struct {
 	Holdings   bool
 	Similar    bool
+	Store      bool
 	etf        etfList
 	FlagSet    *flag.FlagSet
 	allData    map[string]models.AllData
@@ -52,6 +54,7 @@ func NewQueryCmd() *QueryCmd {
 	queryCmd.FlagSet = flag.NewFlagSet("Query ETF Api", flag.ExitOnError)
 	queryCmd.FlagSet.BoolVar(&queryCmd.Holdings, "holdings", false, "Get top holdings for the provided etf")
 	queryCmd.FlagSet.BoolVar(&queryCmd.Similar, "similar", false, "Get sililar etf for the provided etf")
+	queryCmd.FlagSet.BoolVar(&queryCmd.Store, "store-to-db", false, "Save details of requsted etfs to local storage")
 	queryCmd.FlagSet.Var(&queryCmd.etf, "etf", "The etf name to query the data for")
 	return queryCmd
 }
@@ -62,7 +65,7 @@ func (q *QueryCmd) Run(args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Holdings: %v, Similar: %v, Etfs %s \n", q.Holdings, q.Similar, q.etf)
+	fmt.Printf("Holdings: %v, Similar: %v, Etfs %s, Storage: %v \n", q.Holdings, q.Similar, q.etf, q.Store)
 
 	// create in and out channel to fetch positions/similars
 	in := make(chan string)
@@ -114,6 +117,10 @@ func (q *QueryCmd) Run(args []string) error {
 	// 	fmt.Println(key, val)
 	// }
 	// fmt.Println(q.allData, q.etfDetails)
+	if q.Store {
+		return q.addToDb()
+
+	}
 	return nil
 }
 
@@ -156,5 +163,44 @@ func (q *QueryCmd) ToJson(v interface{}) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (q *QueryCmd) addToDb() error {
+	db, err := schemas.NewDbConnection()
+	if err != nil {
+		return err
+	}
+	insert_quert := "INSERT OR IGNORE INTO stocks (ticker, description, etf, expense_ratio) values"
+	holding_quert := "INSERT OR IGNORE INTO holdings (etfname, ticker, weight, refresh_date) values"
+
+	var insert_values []interface{}
+	var holding_insert_values []interface{}
+	for etf, detail := range q.etfDetails {
+		insert_quert += "(?,?,?,?),"
+		insert_values = append(insert_values, strings.ToUpper(etf), detail[2], true, detail[1])
+	}
+	for etf, alldata := range q.allData {
+		for _, holdings := range alldata.Topten {
+			insert_quert += "(?,?,?,?),"
+			holding_quert += "(?,?,?,?),"
+			insert_values = append(insert_values, holdings.Ticker, holdings.Name, false, 0)
+			holding_insert_values = append(holding_insert_values, strings.ToUpper(etf), holdings.Ticker, holdings.Weight, alldata.DateOpen)
+		}
+	}
+	fmt.Println(insert_quert[0 : len(insert_quert)-1])
+	fmt.Println(insert_values...)
+	insert_query, err := db.Prepare(insert_quert[0 : len(insert_quert)-1])
+	holding_query, err := db.Prepare(holding_quert[0 : len(holding_quert)-1])
+	if err != nil {
+		fmt.Println(err)
+	}
+	res, err := insert_query.Exec(insert_values...)
+	res, err = holding_query.Exec(holding_insert_values...)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(res.RowsAffected())
+	// insert_stock, err := db.Prepare("INSERT INTO stocks (ticker, description, etf, expense_ratio) ")
 	return nil
 }
