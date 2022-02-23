@@ -13,9 +13,6 @@ import (
 	"time"
 )
 
-const url string = "https://70a77bonik.execute-api.us-east-1.amazonaws.com/live/similar?ticker="
-const etfDataUrl string = "https://70a77bonik.execute-api.us-east-1.amazonaws.com/live/other?ticker="
-
 type etfList []string
 
 func (e *etfList) String() string {
