@@ -7,34 +7,34 @@ import (
 )
 
 const Stocks string = `
-	CREATE TABLE IF NOT EXISTS  stocks (
+CREATE TABLE IF NOT EXISTS  stocks (
     ticker VARCAR(250) NOT NULL PRIMARY KEY,
     description VARCHAR(250),
     etf BOOL NOT NULL,
-	expense_ratio REAL,
-	insert_ts DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-`
+    expense_ratio REAL,
+    insert_ts DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    `
 
 const Holdings string = `
-	CREATE TABLE IF NOT EXISTS holdings (
-    etfname VARCAR(250) NOT NULL,
-    ticker VARCHAR(250) NOT NULL,
-	weight REAL NOT NULL,
-	refresh_date DATETIME NOT NULL,
-	insert_ts DATETIME DEFAULT CURRENT_TIMESTAMP,
-	PRIMARY KEY (etfname, ticker, refresh_date)
-);
-`
+    CREATE TABLE IF NOT EXISTS holdings (
+        etfname VARCAR(250) NOT NULL,
+        ticker VARCHAR(250) NOT NULL,
+        weight REAL NOT NULL,
+        refresh_date DATETIME NOT NULL,
+        insert_ts DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (etfname, ticker, refresh_date)
+        );
+        `
 const Similars string = `
-	CREATE TABLE IF NOT EXISTS similars (
-    etfname VARCAR(250) NOT NULL,
-    ticker VARCHAR(250) NOT NULL,
-	refresh_date DATETIME NOT NULL,
-	insert_ts DATETIME DEFAULT CURRENT_TIMESTAMP,
-	PRIMARY KEY (etfname, ticker)
-);
-`
+        CREATE TABLE IF NOT EXISTS similars (
+            etfname VARCAR(250) NOT NULL,
+            ticker VARCHAR(250) NOT NULL,
+            refresh_date DATETIME NOT NULL,
+            insert_ts DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (etfname, ticker)
+            );
+            `
 
 func InitDatabase() error {
 	db, err := sql.Open("sqlite3", "etf.db")
