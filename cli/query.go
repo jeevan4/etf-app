@@ -38,13 +38,13 @@ func (e *etfList) FromJson(b io.Reader) error {
 }
 
 type QueryCmd struct {
-	Holdings   bool
-	Similar    bool
-	Store      bool
 	etf        etfList
 	FlagSet    *flag.FlagSet
 	allData    map[string]models.AllData
 	etfDetails map[string]etfList
+	Holdings   bool
+	Similar    bool
+	Store      bool
 }
 
 func NewQueryCmd() *QueryCmd {
@@ -185,11 +185,13 @@ func (q *QueryCmd) addToDb() error {
 			insert_quert += "(?,?,?,?),"
 			holding_quert += "(?,?,?,?),"
 			insert_values = append(insert_values, holdings.Ticker, holdings.Name, false, 0)
-			holding_insert_values = append(holding_insert_values, strings.ToUpper(etf), holdings.Ticker, holdings.Weight, alldata.DateOpen)
+			topten_date, _ := time.Parse("01/02/2006", alldata.DateOpen)
+
+			holding_insert_values = append(holding_insert_values, strings.ToUpper(etf), holdings.Ticker, holdings.Weight, topten_date.Format("2006/01/02"))
 		}
 	}
-	fmt.Println(insert_quert[0 : len(insert_quert)-1])
-	fmt.Println(insert_values...)
+	// fmt.Println(insert_quert[0 : len(insert_quert)-1])
+	// fmt.Println(insert_values...)
 	insert_query, err := db.Prepare(insert_quert[0 : len(insert_quert)-1])
 	holding_query, err := db.Prepare(holding_quert[0 : len(holding_quert)-1])
 	if err != nil {

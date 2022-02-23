@@ -13,7 +13,7 @@ func main() {
 	args := os.Args
 	etfCommand := cli.NewEtfCommand("Etf CLI App")
 	if len(args) < 2 {
-		fmt.Printf("Not Enough arguments privided\nPlease provide\n\tetf <command> --help\n")
+		// fmt.Printf("Not Enough arguments privided\nPlease provide\n\tetf <command> --help\n")
 		etfCommand.Help()
 		return
 	}

@@ -11,7 +11,9 @@ type EtfCommands struct {
 }
 
 func (e *EtfCommands) Help() {
-	fmt.Println("This is help!")
+	for key, _ := range e.Commands {
+		fmt.Println("etf-app ", key, "--help")
+	}
 }
 
 func (e *EtfCommands) Query(args []string) error {
@@ -23,6 +25,14 @@ func (e *EtfCommands) Query(args []string) error {
 	// queryCmd.ToJson(queryCmd.etfDetails)
 	return nil
 }
+
+func (e *EtfCommands) List(args []string) error {
+	fmt.Println("Command from List")
+	listCmd := NewListCommand()
+	listCmd.Run(args)
+	return nil
+}
+
 func NewEtfCommand(name string) *EtfCommands {
 	// prepare database
 	err := schemas.InitDatabase()
@@ -34,6 +44,7 @@ func NewEtfCommand(name string) *EtfCommands {
 	}
 	etfCommand.Commands = map[string]func(args []string) error{
 		"query": etfCommand.Query,
+		"list":  etfCommand.List,
 	}
 	return etfCommand
 }
